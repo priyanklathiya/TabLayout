@@ -1,0 +1,188 @@
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+STEP 1 : ADD dependency
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+dependencies {
+    implementation 'com.google.android.material:material:1.3.0-alpha01'
+}
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+STEP 2 : add style and change style in androidmanifest.xml
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+styles.xml -->
+
+  <style name="ViewpagerTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimaryVP</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDarkVP</item>
+        <item name="colorAccent">@color/colorAccentVP</item>
+    </style>
+    
+    
+AndroidManifest.xml -->
+
+ <activity
+            android:name=".ViewpagerActivity"
+            android:theme="@style/ViewpagerTheme" >
+</activity>
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+STEP 3 : add the following code in activity_viewpager.xml (or activity_main.java) file
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ViewpagerActivity" >
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="@color/colorDivider"
+        app:layout_constraintBottom_toBottomOf="@id/tabLayout"/>
+
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:tabPaddingTop="15dp"
+        app:tabPaddingBottom="8dp"
+        android:background="@android:color/transparent"
+        app:tabIndicatorHeight="3dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tabMode="fixed"/>
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:id="@+id/viewPager"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tabLayout"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+STEP 4 : add 3 vectorasset logo in drawable
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+here :
+      ic_pending
+      ic_confirmed
+      ic_delivered
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+STEP 5 : add 3 blank fragments
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+here :
+      fragment_pending_orders.xml
+      fragment_confirmed_orders.xml
+      fragment_delivered_orders.xml
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+STEP 6 : create adapter OrdersPagerAdapter.java and add following code
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+package com.example.practice101;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+
+public class OrdersPagerAdapter extends FragmentStateAdapter {
+
+    public OrdersPagerAdapter(@NonNull FragmentActivity fragmentActivity) {
+        super(fragmentActivity);
+    }
+
+    @NonNull
+    @Override
+    public Fragment createFragment(int position) {
+        switch (position){
+            case 0:
+                return new PendingOrdersFragment();
+            case 1:
+                return new ConfirmedOrdersFragment();
+            default:
+                return new DeliveredOrdersFragment();
+        }
+    }
+
+    @Override
+    public int getItemCount() {
+        return 3;
+    }
+}
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+STEP 7 : ViewpagerActivity.java (or MainActivity.java) code
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+package com.example.practice101;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.viewpager2.widget.ViewPager2;
+import android.os.Bundle;
+import com.google.android.material.badge.BadgeDrawable;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
+
+public class ViewpagerActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_viewpager);
+
+        ViewPager2 viewPager2 = findViewById(R.id.viewPager);
+        viewPager2.setAdapter(new OrdersPagerAdapter(this));
+        final TabLayout tabLayout = findViewById(R.id.tabLayout);
+        TabLayoutMediator tabLayoutMediator = new TabLayoutMediator(tabLayout, viewPager2, new TabLayoutMediator.TabConfigurationStrategy() {
+            @Override
+            public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
+                switch (position){
+                    case 0:{
+                        tab.setText("pending");
+                        tab.setIcon(R.drawable.ic_pending);
+                        BadgeDrawable badgeDrawable = tab.getOrCreateBadge();
+                        badgeDrawable.setBackgroundColor(ContextCompat.getColor(getApplicationContext(),R.color.colorAccentVP));
+                        badgeDrawable.setVisible(true);
+                        break;
+                    }
+                    case 1:{
+                        tab.setText("confirmed");
+                        tab.setIcon(R.drawable.ic_confirmed);
+                        BadgeDrawable badgeDrawable = tab.getOrCreateBadge();
+                        badgeDrawable.setBackgroundColor(ContextCompat.getColor(getApplicationContext(),R.color.colorAccentVP));
+                        badgeDrawable.setVisible(true);
+                        badgeDrawable.setNumber(21);
+                        break;
+                    }
+                    case 2:{
+                        tab.setText("delivered");
+                        tab.setIcon(R.drawable.ic_delivered);
+                        BadgeDrawable badgeDrawable = tab.getOrCreateBadge();
+                        badgeDrawable.setBackgroundColor(ContextCompat.getColor(getApplicationContext(),R.color.colorAccentVP));
+                        badgeDrawable.setVisible(true);
+                        badgeDrawable.setNumber(250);
+                        badgeDrawable.setMaxCharacterCount(3);
+                        break;
+                    }
+                }
+            }
+        });
+        tabLayoutMediator.attach();
+        viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @Override
+            public void onPageSelected(int position) {
+                super.onPageSelected(position);
+                BadgeDrawable badgeDrawable = tabLayout.getTabAt(position).getOrCreateBadge();
+                badgeDrawable.setVisible(false);
+            }
+        });
+    }
+}
